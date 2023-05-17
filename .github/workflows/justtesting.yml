@@ -25,7 +25,17 @@ jobs:
         env:
           COMMIT_MESSAGES: ${{ toJson(github.event.commits.*.message) }}
         run: echo "$COMMIT_MESSAGES"
-      - name: pull request messages
-        env:
-          PULL_REQUEST_MESSAGES: ${{ toJson(github.event.pull_request.head.commit.message) }}
-        run: echo "$PULL_REQUEST_MESSAGES"
+      - name: pull request commit messages
+        id: commit_messages
+        run: |
+          commits=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                    "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.number }}/commits")
+
+          messages=$(echo "$commits" | jq -r '.[].commit.message')
+
+          echo "::set-output name=commit_messages::$messages"
+
+      - name: display commit messages
+        run: |
+          echo "Commit Messages:"
+          echo "${{ steps.commit_messages.outputs.commit_messages }}"
