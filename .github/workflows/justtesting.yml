@@ -1,0 +1,29 @@
+name: Testing stuff
+
+on:
+  push:
+    branches:
+      - other_branch
+  pull_request:
+    branches: [other_branch]
+    types: [opened, synchronize]
+
+jobs:
+  a_test_job:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: pull request commit messages
+        id: commit_messages
+        run: |
+          commits=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                    "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.number }}/commits")
+
+          messages=$(echo "$commits" | jq -r '.[].commit.message' | tr '\n' ' ')
+
+          echo "PR_COMMIT_MESSAGES=$messages" >> $GITHUB_ENV
+
+      - name: display commit messages
+        run: |
+          echo "Commit Messages:"
+          echo "$PR_COMMIT_MESSAGES"

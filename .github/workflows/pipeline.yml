@@ -30,9 +30,18 @@ jobs:
           command: npm run test:e2e
           start: npm run start-prod
           wait-on: http://localhost:5000
+      - name: pull request commit messages
+        run: |
+          commits=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                    "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.number }}/commits")
+
+          messages=$(echo "$commits" | jq -r '.[].commit.message' | tr '\n' ' ')
+
+          echo "PR_COMMIT_MESSAGES=$messages" >> $GITHUB_ENV
+        
       - name: Deploy to render.com
         uses: johnbeynon/render-deploy-action@v0.0.8
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' && !contains(env.PR_COMMIT_MESSAGES, '#skip') }}
         with:
           service-id: ${{ secrets.SERVICE_ID}}
           api-key: ${{ secrets.API_KEY }}
@@ -43,9 +52,18 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v3
+      - name: pull request commit messages
+        run: |
+          commits=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                    "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.number }}/commits")
+
+          messages=$(echo "$commits" | jq -r '.[].commit.message' | tr '\n' ' ')
+
+          echo "PR_COMMIT_MESSAGES=$messages" >> $GITHUB_ENV
+
       - name: Bump version and push tag
         uses: anothrNick/github-tag-action@1.64.0
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' && !contains(env.PR_COMMIT_MESSAGES, '#skip') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
