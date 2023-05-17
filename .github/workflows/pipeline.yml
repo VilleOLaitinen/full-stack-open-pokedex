@@ -57,7 +57,7 @@ jobs:
 
       - name: Bump version and push tag
         uses: anothrNick/github-tag-action@1.64.0
-        if: ${{ github.event_name == 'push' && !contains(env.PR_COMMIT_MESSAGES, '#skip') }}
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message), '#skip') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
