@@ -35,6 +35,7 @@ jobs:
         env:
           PR_COMMIT_MESSAGES: ${{ join(github.event.commits.*.message) }}
         run: echo "$PR_COMMIT_MESSAGES"
+
       - name: Deploy to render.com
         uses: johnbeynon/render-deploy-action@v0.0.8
         if: ${{ github.event_name == 'push' && !contains(env.PR_COMMIT_MESSAGES, '#skip') }}
