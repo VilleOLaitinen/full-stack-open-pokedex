@@ -38,7 +38,7 @@ jobs:
 
       - name: Deploy to render.com
         uses: johnbeynon/render-deploy-action@v0.0.8
-        if: ${{ github.event_name == 'push' && !contains(env.PR_COMMIT_MESSAGES, '#skip') }}
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message), '#skip') }}
         with:
           service-id: ${{ secrets.SERVICE_ID}}
           api-key: ${{ secrets.API_KEY }}
@@ -54,7 +54,7 @@ jobs:
         env:
           PR_COMMIT_MESSAGES: ${{ join(github.event.commits.*.message) }}
         run: echo "$PR_COMMIT_MESSAGES"
-        
+
       - name: Bump version and push tag
         uses: anothrNick/github-tag-action@1.64.0
         if: ${{ github.event_name == 'push' && !contains(env.PR_COMMIT_MESSAGES, '#skip') }}
