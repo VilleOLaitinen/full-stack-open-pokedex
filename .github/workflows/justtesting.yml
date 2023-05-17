@@ -33,9 +33,9 @@ jobs:
 
           messages=$(echo "$commits" | jq -r '.[].commit.message' | tr '\n' ' ')
 
-          echo "::set-output name=commit_messages::$messages"
+          echo "PR_COMMIT_MESSAGES=$messages" >> $GITHUB_ENV
 
       - name: display commit messages
         run: |
           echo "Commit Messages:"
-          echo "${{ steps.commit_messages.outputs.commit_messages }}"
+          echo "$PR_COMMIT_MESSAGES"
